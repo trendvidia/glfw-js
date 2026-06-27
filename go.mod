@@ -1,4 +1,4 @@
-module github.com/fyne-io/glfw-js
+module github.com/trendvidia/glfw-js
 
 go 1.19
 

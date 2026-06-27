@@ -42,6 +42,13 @@ const (
 	FailIfMajorPerformanceCaveat
 )
 
+// NoAPI is the ClientAPI value requesting a context-less window: CreateWindow
+// then skips WebGL context creation so the bare canvas can host a WebGPU context
+// instead (a canvas holds exactly one context type). Mirrors glfw.NoAPI on
+// desktop. Presence in the hints map (not this zero value) is what selects it,
+// so an unset ClientAPI still defaults to the WebGL path. (trendvidia: WebGPU.)
+const NoAPI int = 0
+
 func WindowHint(target Hint, hint int) {
 	hints[target] = hint
 }

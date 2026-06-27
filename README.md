@@ -1,6 +1,6 @@
-[![Tests](https://github.com/fyne-io/glfw-js/actions/workflows/tests.yml/badge.svg)](https://github.com/fyne-io/glfw-js/actions/workflows/tests.yml)
-[![Static Analysis](https://github.com/fyne-io/glfw-js/actions/workflows/analysis.yml/badge.svg)](https://github.com/fyne-io/glfw-js/actions/workflows/analysis.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/fyne-io/glfw-js.svg)](https://pkg.go.dev/github.com/fyne-io/glfw-js)
+[![Tests](https://github.com/trendvidia/glfw-js/actions/workflows/tests.yml/badge.svg)](https://github.com/trendvidia/glfw-js/actions/workflows/tests.yml)
+[![Static Analysis](https://github.com/trendvidia/glfw-js/actions/workflows/analysis.yml/badge.svg)](https://github.com/trendvidia/glfw-js/actions/workflows/analysis.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/trendvidia/glfw-js.svg)](https://pkg.go.dev/github.com/trendvidia/glfw-js)
 
 # glfw-js
 
@@ -14,7 +14,7 @@ It is used for creating a GL context and receiving events.
 ## Installation
 
 ```sh
-go get github.com/fyne-io/glfw-js
+go get github.com/trendvidia/glfw-js
 ```
 
 ## Directories
