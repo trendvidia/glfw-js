@@ -277,6 +277,12 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 		me.Call("preventDefault")
 		return nil
 	}))
+	// Register the wheel listener explicitly non-passive. Chrome (and other
+	// browsers) treat document/window/body wheel listeners as passive by
+	// default, which turns the preventDefault() below into a silent no-op and
+	// lets the page scroll instead of (or as well as) the canvas content.
+	// Passing {passive: false} restores preventDefault so a wheel gesture drives
+	// only the fyne canvas scroll (delivered via scrollCallback). See fyne #377.
 	addDocumentEventListener.Invoke("wheel", newJsFuncFrom(func(this js.Value, args []js.Value) any {
 		we := args[0]
 
@@ -302,7 +308,7 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 
 		we.Call("preventDefault")
 		return nil
-	}))
+	}), map[string]any{"passive": false})
 
 	/*
 		// Hacky mouse-emulation-via-touch.
