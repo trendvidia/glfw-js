@@ -177,6 +177,7 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 		}
 		w.keys[key] = action
 		mods := toModifierKey(ke)
+		w.currentMods = mods
 		if w.keyCallback != nil {
 			go w.keyCallback(w, key, -1, action, mods)
 		}
@@ -205,10 +206,9 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 		}
 		w.keys[key] = Release
 
+		w.currentMods = toModifierKey(ke)
 		if w.keyCallback != nil {
-			mods := toModifierKey(ke)
-
-			go w.keyCallback(w, key, -1, Release, mods)
+			go w.keyCallback(w, key, -1, Release, w.currentMods)
 		}
 
 		ke.Call("preventDefault")
@@ -224,8 +224,9 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 		}
 
 		w.mouseButton[button] = Press
+		w.currentMods = toModifierKey(me)
 		if w.mouseButtonCallback != nil {
-			go w.mouseButtonCallback(w, MouseButton(button), Press, 0)
+			go w.mouseButtonCallback(w, MouseButton(button), Press, w.currentMods)
 		}
 
 		me.Call("preventDefault")
@@ -241,8 +242,9 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 		}
 
 		w.mouseButton[button] = Release
+		w.currentMods = toModifierKey(me)
 		if w.mouseButtonCallback != nil {
-			go w.mouseButtonCallback(w, MouseButton(button), Release, 0)
+			go w.mouseButtonCallback(w, MouseButton(button), Release, w.currentMods)
 		}
 
 		me.Call("preventDefault")
@@ -268,6 +270,7 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 		movementY *= w.devicePixelRatio
 
 		w.cursorPos[0], w.cursorPos[1] = me.Get("clientX").Float()*w.devicePixelRatio, me.Get("clientY").Float()*w.devicePixelRatio
+		w.currentMods = toModifierKey(me)
 		if w.cursorPosCallback != nil {
 			go w.cursorPosCallback(w, w.cursorPos[0], w.cursorPos[1])
 		}
@@ -285,6 +288,7 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 	// only the fyne canvas scroll (delivered via scrollCallback). See fyne #377.
 	addDocumentEventListener.Invoke("wheel", newJsFuncFrom(func(this js.Value, args []js.Value) any {
 		we := args[0]
+		w.currentMods = toModifierKey(we)
 
 		deltaX := we.Get("deltaX").Float()
 		deltaY := we.Get("deltaY").Float()
@@ -382,6 +386,12 @@ type Window struct {
 	mouseButton [3]Action
 
 	keys []Action
+
+	// currentMods is the modifier-key state from the most recent DOM event
+	// that carried it (key, mouse button, mouse move, wheel). Unlike the
+	// keys slice it is refreshed by pointer events too, so it stays correct
+	// for modifiers pressed or released while the canvas lacked key focus.
+	currentMods ModifierKey
 
 	cursorPosCallback       CursorPosCallback
 	mouseMovementCallback   MouseMovementCallback
@@ -597,6 +607,15 @@ func (w *Window) GetKey(key Key) Action {
 		return Release
 	}
 	return w.keys[key]
+}
+
+// GetCurrentMods returns the modifier-key state carried by the most recent
+// DOM input event (key, mouse button, mouse move or wheel). Because pointer
+// events refresh it too, it reflects modifiers that changed while the canvas
+// did not have keyboard focus — e.g. a key held down before the pointer
+// entered the window — which the key-event stream alone would miss.
+func (w *Window) GetCurrentMods() ModifierKey {
+	return w.currentMods
 }
 
 func (w *Window) GetMouseButton(button MouseButton) Action {

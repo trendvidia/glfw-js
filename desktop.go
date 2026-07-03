@@ -210,6 +210,26 @@ func (w *Window) GetMouseButton(button MouseButton) Action {
 	return Action(a)
 }
 
+// GetCurrentMods returns the modifier-key state from the most recent input
+// event. On the desktop (test) build the native key state is polled instead,
+// as GLFW delivers modifier bits only with events.
+func (w *Window) GetCurrentMods() ModifierKey {
+	var mods ModifierKey
+	if w.GetKey(KeyLeftShift) == Press || w.GetKey(KeyRightShift) == Press {
+		mods |= ModShift
+	}
+	if w.GetKey(KeyLeftControl) == Press || w.GetKey(KeyRightControl) == Press {
+		mods |= ModControl
+	}
+	if w.GetKey(KeyLeftAlt) == Press || w.GetKey(KeyRightAlt) == Press {
+		mods |= ModAlt
+	}
+	if w.GetKey(KeyLeftSuper) == Press || w.GetKey(KeyRightSuper) == Press {
+		mods |= ModSuper
+	}
+	return mods
+}
+
 func (w *Window) GetInputMode(mode InputMode) int {
 	return w.Window.GetInputMode(glfw.InputMode(mode))
 }
