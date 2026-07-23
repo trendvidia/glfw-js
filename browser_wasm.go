@@ -182,7 +182,15 @@ func CreateWindow(_, _ int, title string, monitor *Monitor, share *Window) (*Win
 			go w.keyCallback(w, key, -1, action, mods)
 		}
 
-		if w.charCallback != nil && mods < 2 {
+		// An IME-processing key (keyCode 229 per MDN, or isComposing) must not
+		// synthesize a character: the composed text arrives through the DOM
+		// composition events on the host page's hidden input. The very first
+		// key of a composition reports isComposing=false (compositionstart has
+		// not fired yet) but already carries keyCode 229 — synthesizing from it
+		// leaked the first letter of every composition into the app (fyne#674).
+		imeProcessing := ke.Get("keyCode").Int() == 229 ||
+			(ke.Get("isComposing").Truthy() && ke.Get("isComposing").Bool())
+		if w.charCallback != nil && mods < 2 && !imeProcessing {
 			keyStr := ke.Get("key").String()
 			if len(keyStr) == 1 {
 				keyRune := []rune(keyStr)
